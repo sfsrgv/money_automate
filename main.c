@@ -72,8 +72,10 @@ struct state state_table[NUMBER_OF_STATES] = {
         }
 };
 
+int state;
+
 int main() {
-    int state = WAITING_FOR_CARD_STATE;
+    state = ASKING_LANGUAGE_STATE;
     while (state != -1) {
         print_user_state_name(state);
         SAFE_RUN(state_table[state].enter);

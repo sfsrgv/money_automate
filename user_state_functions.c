@@ -1,5 +1,36 @@
 #include "user_state_functions.h"
 
+int language = ENGLISH;
+int previous_state = 0;
+extern int state;
+
+char *messages[6][2] = {
+        {
+                "Enter card:",
+                "Вставьте карту:"
+        },
+        {
+                "Enter password:",
+                "Введите пароль:"
+        },
+        {
+                "Choose command:\n1 - Show budget\n2 - Get cash\n3 - Make a deposit\n4 - Return card\n5 - Change language",
+                "Выберите комманду:\n1 - Посмотреть остаток\n2 - Выдача наличных\n3 - Положить на счет\n4 - Вернуть карту\n5 - Изменить язык"
+        },
+        {
+                "Enter sum to get:",
+                "Введите сумму выдачи:"
+        },
+        {
+                "Enter sum of deposit:",
+                "Введите сумму для зачисления на счет:"
+        },
+        {
+                "Choose language:\n1 - English\n2 - Russian",
+                "Выберите язык:\n1 - Английский\n2 - Русский"
+        }
+};
+
 void print_user_state_name(int i) {
     switch (i) {
         case 0: {
@@ -87,6 +118,13 @@ void process_return_card_event() {}
 
 void exit_return_card_state() {}
 
-void process_asking_language_event() {}
+void process_asking_language_event() {
+    printf("%s\n", messages[5][language]);
+    int user_response;
+    scanf("%d", &user_response);
+    language = user_response - 1;
+}
 
-void exit_asking_language_state() {}
+void exit_asking_language_state() {
+    state = ASKING_LANGUAGE_STATE;
+}
