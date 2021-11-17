@@ -18,7 +18,7 @@ struct state {
 struct state state_table[NUMBER_OF_STATES] = {
         // WAITING FOR CARD 0
         {
-                NULL,
+                enter_waiting_for_card_state,
                 process_waiting_for_card_event,
                 exit_waiting_for_card_state
         },
@@ -75,9 +75,9 @@ struct state state_table[NUMBER_OF_STATES] = {
 int state;
 
 int main() {
-    state = ASKING_LANGUAGE_STATE;
+    state = WAITING_FOR_CARD_STATE;
     while (state != -1) {
-        print_user_state_name(state);
+        //print_user_state_name(state);
         SAFE_RUN(state_table[state].enter);
         SAFE_RUN(state_table[state].process);
         SAFE_RUN(state_table[state].exit);

@@ -4,6 +4,8 @@ int language = ENGLISH;
 int previous_state = 0;
 extern int state;
 
+char *card_number;
+
 char *messages[6][2] = {
         {
                 "Enter card:",
@@ -78,9 +80,27 @@ void print_user_state_name(int i) {
     }
 }
 
-void process_waiting_for_card_event() {}
+void enter_waiting_for_card_state() {
+    printf("%s\n", messages[0][language]);
+}
 
-void exit_waiting_for_card_state() {}
+void process_waiting_for_card_event() {
+    free(card_number);
+    size_t length = 0;
+    getline(&(card_number), &length, stdin);
+    if (strncmp(card_number, "\n", 1) == 0)
+        getline(&(card_number), &length, stdin);
+    (card_number)[strlen(card_number) - 1] = 0;
+}
+
+void exit_waiting_for_card_state() {
+    printf("card number: %s\n", card_number);
+    if (strncmp(card_number, "LANGUAGE", 8) == 0) {
+        previous_state = WAITING_FOR_CARD_STATE;
+        state = ASKING_LANGUAGE_STATE;
+    } else
+        state = CARD_ENTERED_STATE;
+}
 
 void process_card_entered_event() {}
 
@@ -126,5 +146,5 @@ void process_asking_language_event() {
 }
 
 void exit_asking_language_state() {
-    state = ASKING_LANGUAGE_STATE;
+    state = previous_state;
 }

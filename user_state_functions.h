@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#include "char_reading.h"
+
 #define NUMBER_OF_STATES 9
 
 enum state_names {
@@ -24,6 +26,8 @@ enum languages {
 
 
 void print_user_state_name(int i);
+
+void enter_waiting_for_card_state();
 
 void process_waiting_for_card_event();
 
