@@ -86,12 +86,15 @@ struct card {
 
 int size_of_database;
 struct card *cards;
+int cash_in_automate;
 
 int download_database() {
     FILE *cards_file;
     SAFE_OPENING_FILE(cards_file, "cards.txt", "r");
     char_auto_ptr buffer;
     size_t length = 0;
+    getline(&buffer, &length, cards_file);
+    cash_in_automate = atoi(buffer);
     getline(&buffer, &length, cards_file);
     size_of_database = atoi(buffer);
     SAFE_MALLOC(cards, struct card, sizeof(struct card) * size_of_database);

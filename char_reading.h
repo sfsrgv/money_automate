@@ -17,14 +17,20 @@ void free_char_auto_ptr(char **ptr);
 #define READ_LINE(line)                          \
         do {                                     \
             static size_t length = 0;            \
-            if ((line) != NULL){                   \
+            if ((line) != NULL){                 \
                 free(line);                      \
-                (line) = "";    \
+                (line) = "";                     \
                 }                                \
             getline(&(line), &length, stdin);    \
             if (strncmp((line), "\n", 1) == 0)   \
                 getline(&(line), &length, stdin);\
             (line)[strlen(line) - 1] = 0;        \
+        } while(0)
+
+#define READ_INT(num)                           \
+        do {                                    \
+            char buffer;                        \
+            scanf("%d%c", &(num), &buffer);     \
         } while(0)
 
 

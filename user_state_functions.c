@@ -10,6 +10,7 @@ struct card {
 extern int size_of_database;
 extern struct card *cards;
 extern int state;
+extern int cash_in_automate;
 
 int language = ENGLISH;
 int previous_state = 0;
@@ -17,7 +18,7 @@ char *card_number;
 int index_of_current_card;
 int command_index;
 
-char *messages[10][2] = {
+char *messages[15][2] = {
         {
                 "Enter card:",
                 "Вставьте карту:"
@@ -57,6 +58,26 @@ char *messages[10][2] = {
         {
                 "Unknown command. Please, try again",
                 "Неизвестная комманда. Пожалуйста, попробуйте снова"
+        },
+        {
+                "You have ",
+                "На вашем счету "
+        },
+        {
+                "Not enough  cash in automate",
+                "В автомате недостаточно наличных"
+        },
+        {
+                "Not enough money on your card",
+                "Недостаточно средств на счете"
+        },
+        {
+                "Take your cash",
+                "Возьмите деньги"
+        },
+        {
+                "Operation made",
+                "Операция проведена"
         }
 };
 
@@ -211,21 +232,53 @@ void exit_waiting_for_commands_state() {
     }
 }
 
-void process_show_budget_event() {}
+void process_show_budget_event() {
+    printf("%s%d$\n", messages[10][language], cards[index_of_current_card].budget);
+}
 
-void exit_show_budget_state() {}
+void exit_show_budget_state() {
+    state = WAITING_FOR_COMMANDS_STATE;
+}
 
-void enter_get_cash_state() {}
+void enter_get_cash_state() {
+    printf("%s\n", messages[3][language]);
+}
 
-void process_get_cash_event() {}
+void process_get_cash_event() {
+    int user_request;
+    READ_INT(user_request);
+    if (user_request > cards[index_of_current_card].budget) {
+        printf("%s\n", messages[12][language]);
+        return;
+    }
+    if (user_request > cash_in_automate) {
+        printf("%s\n", messages[11][language]);
+        return;
+    }
+    printf("%s\n", messages[13][language]);
+    cash_in_automate -= user_request;
+    cards[index_of_current_card].budget -= user_request;
+}
 
-void exit_get_cash_state() {}
+void exit_get_cash_state() {
+    state = WAITING_FOR_COMMANDS_STATE;
+}
 
-void enter_make_deposit_state() {}
+void enter_make_deposit_state() {
+    printf("%s\n", messages[4][language]);
+}
 
-void process_make_deposit_event() {}
+void process_make_deposit_event() {
+    int user_request;
+    READ_INT(user_request);
+    printf("%s\n", messages[14][language]);
+    cash_in_automate += user_request;
+    cards[index_of_current_card].budget += user_request;
+}
 
-void exit_make_deposit_state() {}
+void exit_make_deposit_state() {
+    state = WAITING_FOR_COMMANDS_STATE;
+}
 
 void process_return_card_event() {
     printf("%s\n", messages[7][language]);
