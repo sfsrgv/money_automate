@@ -2,6 +2,7 @@
 #define CHAR_READING_H
 
 #include <malloc.h>
+#include <string.h>
 
 // Free ptr
 void free_char_auto_ptr(char **ptr);

@@ -1,12 +1,21 @@
 #include "user_state_functions.h"
 
-int language = ENGLISH;
-int previous_state = 0;
+struct card {
+    char *number;
+    char *password;
+    int budget;
+};
+
+
+extern int size_of_database;
+extern struct card *cards;
 extern int state;
 
+int language = ENGLISH;
+int previous_state = 0;
 char *card_number;
 
-char *messages[6][2] = {
+char *messages[8][2] = {
         {
                 "Enter card:",
                 "Вставьте карту:"
@@ -30,6 +39,14 @@ char *messages[6][2] = {
         {
                 "Choose language:\n1 - English\n2 - Russian",
                 "Выберите язык:\n1 - Английский\n2 - Русский"
+        },
+        {
+            "Sorry, this card is not from our bank",
+            "К сожалению, это карта не из нашего банка"
+        },
+        {
+            "Take your card",
+            "Заберите карту"
         }
 };
 
@@ -86,15 +103,10 @@ void enter_waiting_for_card_state() {
 
 void process_waiting_for_card_event() {
     free(card_number);
-    size_t length = 0;
-    getline(&(card_number), &length, stdin);
-    if (strncmp(card_number, "\n", 1) == 0)
-        getline(&(card_number), &length, stdin);
-    (card_number)[strlen(card_number) - 1] = 0;
+    READ_LINE(card_number);
 }
 
 void exit_waiting_for_card_state() {
-    printf("card number: %s\n", card_number);
     if (strncmp(card_number, "LANGUAGE", 8) == 0) {
         previous_state = WAITING_FOR_CARD_STATE;
         state = ASKING_LANGUAGE_STATE;
@@ -102,9 +114,20 @@ void exit_waiting_for_card_state() {
         state = CARD_ENTERED_STATE;
 }
 
-void process_card_entered_event() {}
+void process_card_entered_event() {
+    for (int i = 0; i < size_of_database; ++i)
+        if (strcmp(card_number, cards[i].number) == 0)
+            return;
+    card_number = NULL;
+    printf("%s\n", messages[6][language]);
+}
 
-void exit_card_entered_state() {}
+void exit_card_entered_state() {
+    if (card_number == NULL)
+        state = RETURN_CARD_STATE;
+    else
+        state = GETTING_PASSWORD_STATE;
+}
 
 void enter_getting_password_state() {}
 
@@ -134,9 +157,13 @@ void process_make_deposit_event() {}
 
 void exit_make_deposit_state() {}
 
-void process_return_card_event() {}
+void process_return_card_event() {
+    printf("%s\n", messages[7][language]);
+}
 
-void exit_return_card_state() {}
+void exit_return_card_state() {
+    state = WAITING_FOR_CARD_STATE;
+}
 
 void process_asking_language_event() {
     printf("%s\n", messages[5][language]);
