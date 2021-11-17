@@ -2,6 +2,7 @@
 #define MONEY_AUTOMATE_USER_STATE_FUNCTIONS_H
 
 #include <stdio.h>
+#include <string.h>
 
 #include "char_reading.h"
 
