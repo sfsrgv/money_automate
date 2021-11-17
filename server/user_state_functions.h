@@ -69,6 +69,8 @@ void process_return_card_event();
 
 void exit_return_card_state();
 
+void enter_asking_language_state();
+
 void process_asking_language_event();
 
 void exit_asking_language_state();

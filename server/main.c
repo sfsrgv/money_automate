@@ -1,3 +1,10 @@
+// Sofa Sergeeva
+//
+// Make a money automate
+//
+// To compile program use command:
+// gcc main.c user_state_functions.c char_reading.c
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,6 +17,12 @@
                 if ((func) != NULL)      \
                    func();               \
             } while (0)
+
+struct card {
+    char *number;
+    char *password;
+    int budget;
+};
 
 struct state {
     void (*enter)();
@@ -70,23 +83,16 @@ struct state state_table[NUMBER_OF_STATES] = {
         },
         // ASKING LANGUAGE 8
         {
-                NULL,
+                enter_asking_language_state,
                 process_asking_language_event,
                 exit_asking_language_state
         }
 };
 
 int state;
-
-struct card {
-    char *number;
-    char *password;
-    int budget;
-};
-
 int size_of_database;
-struct card *cards;
 int cash_in_automate;
+struct card *cards;
 
 int download_database() {
     FILE *cards_file;
@@ -102,10 +108,8 @@ int download_database() {
         getline(&buffer, &length, cards_file);
         SAFE_MALLOC(cards[i].number, char, sizeof(char) * 16);
         strncpy(cards[i].number, buffer, 16);
-
         SAFE_MALLOC(cards[i].password, char, sizeof(char) * 4);
         strncpy(cards[i].password, buffer + 17, 4);
-
         cards[i].budget = atoi(buffer + 22);
     }
     fclose(cards_file);
@@ -113,10 +117,9 @@ int download_database() {
 }
 
 int main() {
-    state = WAITING_FOR_CARD_STATE;
+    state = ASKING_LANGUAGE_STATE;
     download_database();
     while (state != -1) {
-        //print_user_state_name(state);
         SAFE_RUN(state_table[state].enter);
         SAFE_RUN(state_table[state].process);
         SAFE_RUN(state_table[state].exit);
