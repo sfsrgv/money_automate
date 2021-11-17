@@ -1,5 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "user_state_functions.h"
+#include "safe_macroses.h"
 
 #define SAFE_RUN(func)                   \
             do {                         \
@@ -74,8 +78,40 @@ struct state state_table[NUMBER_OF_STATES] = {
 
 int state;
 
+struct card {
+    char *number;
+    char *password;
+    int budget;
+};
+
+int size_of_database;
+struct card *cards;
+
+int download_database() {
+    FILE *cards_file;
+    SAFE_OPENING_FILE(cards_file, "cards.txt", "r");
+    char_auto_ptr buffer;
+    size_t length = 0;
+    getline(&buffer, &length, cards_file);
+    size_of_database = atoi(buffer);
+    SAFE_MALLOC(cards, struct card, sizeof(struct card) * size_of_database);
+    for (int i = 0; i < size_of_database; ++i) {
+        getline(&buffer, &length, cards_file);
+        SAFE_MALLOC(cards[i].number, char, sizeof(char) * 16);
+        strncpy(cards[i].number, buffer, 16);
+
+        SAFE_MALLOC(cards[i].password, char, sizeof(char) * 4);
+        strncpy(cards[i].password, buffer + 17, 4);
+
+        cards[i].budget = atoi(buffer + 22);
+    }
+    fclose(cards_file);
+    return 0;
+}
+
 int main() {
     state = WAITING_FOR_CARD_STATE;
+    download_database();
     while (state != -1) {
         //print_user_state_name(state);
         SAFE_RUN(state_table[state].enter);
