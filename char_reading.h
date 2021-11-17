@@ -11,9 +11,16 @@ void free_char_auto_ptr(char **ptr);
 #define char_auto_ptr char* __attribute__((cleanup(free_char_auto_ptr)))
 
 // Reads line from console
+
+//printf("[%s]\n", (line));
+
 #define READ_LINE(line)                          \
         do {                                     \
             static size_t length = 0;            \
+            if ((line) != NULL){                   \
+                free(line);                      \
+                (line) = "";    \
+                }                                \
             getline(&(line), &length, stdin);    \
             if (strncmp((line), "\n", 1) == 0)   \
                 getline(&(line), &length, stdin);\

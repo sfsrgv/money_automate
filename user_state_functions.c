@@ -14,8 +14,10 @@ extern int state;
 int language = ENGLISH;
 int previous_state = 0;
 char *card_number;
+int index_of_current_card;
+int command_index;
 
-char *messages[8][2] = {
+char *messages[10][2] = {
         {
                 "Enter card:",
                 "Вставьте карту:"
@@ -41,12 +43,20 @@ char *messages[8][2] = {
                 "Выберите язык:\n1 - Английский\n2 - Русский"
         },
         {
-            "Sorry, this card is not from our bank",
-            "К сожалению, это карта не из нашего банка"
+                "Sorry, this card is not from our bank",
+                "К сожалению, это карта не из нашего банка"
         },
         {
-            "Take your card",
-            "Заберите карту"
+                "Take your card",
+                "Заберите карту"
+        },
+        {
+                "Incorrect password. Number of remaining attempts: ",
+                "Неверный пароль. Осталось попыток: "
+        },
+        {
+                "Unknown command. Please, try again",
+                "Неизвестная комманда. Пожалуйста, попробуйте снова"
         }
 };
 
@@ -102,8 +112,11 @@ void enter_waiting_for_card_state() {
 }
 
 void process_waiting_for_card_event() {
-    free(card_number);
-    READ_LINE(card_number);
+    size_t length = 0;
+    getline(&(card_number), &length, stdin);
+    if (strncmp((card_number), "\n", 1) == 0)
+        getline(&(card_number), &length, stdin);
+    (card_number)[strlen(card_number) - 1] = 0;
 }
 
 void exit_waiting_for_card_state() {
@@ -116,30 +129,87 @@ void exit_waiting_for_card_state() {
 
 void process_card_entered_event() {
     for (int i = 0; i < size_of_database; ++i)
-        if (strcmp(card_number, cards[i].number) == 0)
+        if (strcmp(card_number, cards[i].number) == 0) {
+            index_of_current_card = i;
             return;
-    card_number = NULL;
+        }
+    index_of_current_card = -1;
     printf("%s\n", messages[6][language]);
 }
 
 void exit_card_entered_state() {
-    if (card_number == NULL)
+    if (index_of_current_card == -1)
         state = RETURN_CARD_STATE;
     else
         state = GETTING_PASSWORD_STATE;
 }
 
-void enter_getting_password_state() {}
+void enter_getting_password_state() {
+    printf("%s\n", messages[1][language]);
+}
 
-void process_getting_password_event() {}
+void process_getting_password_event() {
+    char_auto_ptr user_password;
+    for (int i = 3; i > 0; --i) {
+        size_t length = 0;
+        getline(&(user_password), &length, stdin);
+        if (strncmp((user_password), "\n", 1) == 0)
+            getline(&(user_password), &length, stdin);
+        (user_password)[strlen(user_password) - 1] = 0;
+        if (strncmp(user_password, cards[index_of_current_card].password, 4) == 0)
+            return;
+        else
+            printf("%s%d\n", messages[8][language], i - 1);
+    }
+    index_of_current_card = -1;
+}
 
-void exit_getting_password_state() {}
+void exit_getting_password_state() {
+    if (index_of_current_card == -1)
+        state = RETURN_CARD_STATE;
+    else
+        state = WAITING_FOR_COMMANDS_STATE;
+}
 
-void enter_waiting_for_commands_state() {}
+void enter_waiting_for_commands_state() {
+    printf("%s\n", messages[2][language]);
+}
 
-void process_waiting_for_commands_event() {}
+void process_waiting_for_commands_event() {
+    char buffer;
+    scanf("%d%c", &command_index, &buffer);
+}
 
-void exit_waiting_for_commands_state() {}
+void exit_waiting_for_commands_state() {
+    switch (command_index) {
+        case 1: {
+            state = SHOW_BUDGET_STATE;
+            break;
+        }
+        case 2: {
+            state = GET_CASH_STATE;
+            break;
+        }
+        case 3: {
+            state = MAKE_DEPOSIT_STATE;
+            break;
+        }
+        case 4: {
+            state = RETURN_CARD_STATE;
+            break;
+        }
+        case 5: {
+            previous_state = WAITING_FOR_COMMANDS_STATE;
+            state = ASKING_LANGUAGE_STATE;
+            break;
+        }
+        default: {
+            printf("%s\n", messages[9][language]);
+            state = WAITING_FOR_COMMANDS_STATE;
+            break;
+        }
+    }
+}
 
 void process_show_budget_event() {}
 
@@ -168,7 +238,8 @@ void exit_return_card_state() {
 void process_asking_language_event() {
     printf("%s\n", messages[5][language]);
     int user_response;
-    scanf("%d", &user_response);
+    char buffer;
+    scanf("%d%c", &user_response, &buffer);
     language = user_response - 1;
 }
 
