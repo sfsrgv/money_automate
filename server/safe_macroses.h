@@ -29,5 +29,10 @@
         } while (0)
 
 
+#define SAFE_RUN(func)                   \
+            do {                         \
+                if ((func) != NULL)      \
+                   func();               \
+            } while (0)
 
 #endif //BLOWFISH_ALGORITHM_SAFE_MACROSES_H

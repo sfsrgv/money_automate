@@ -10,29 +10,18 @@
 #include <string.h>
 
 #include "user_state_functions.h"
+#include "admin_state_functions.h"
 #include "safe_macroses.h"
 
-#define SAFE_RUN(func)                   \
-            do {                         \
-                if ((func) != NULL)      \
-                   func();               \
-            } while (0)
 
-struct card {
-    char *number;
-    char *password;
-    int budget;
-};
 
 struct state {
     void (*enter)();
-
     void (*process)();
-
     void (*exit)();
 };
 
-struct state state_table[NUMBER_OF_STATES] = {
+struct state user_state_table[NUMBER_OF_USER_STATES] = {
         // WAITING FOR CARD 0
         {
                 enter_waiting_for_card_state,
@@ -89,40 +78,62 @@ struct state state_table[NUMBER_OF_STATES] = {
         }
 };
 
-int state;
-int size_of_database;
-int cash_in_automate;
-struct card *cards;
+struct state admin_state_table[NUMBER_OF_ADMIN_STATES] = {
+        // TURNING OFF 0
+        {
+                enter_turning_off_state,
+                process_turning_off_event,
+                exit_turning_off_state
+        },
+        // OFF 1
+        {
+                enter_off_state,
+                process_off_event,
+                exit_off_state
+        },
+        // TURNING ON 2
+        {
+                enter_turning_on_state,
+                process_turning_on_event,
+                exit_turning_on_state
+        },
+        // ON 3
+        {
+                enter_on_state,
+                process_on_event,
+                exit_on_state
+        },
+        // SHOW MONEY 4
+        {
+                enter_show_money_state,
+                process_show_money_event,
+                exit_show_money_state
+        },
+        // CHECKING 5
+        {
+                enter_check_state,
+                process_check_event,
+                exit_check_state
+        },
+        // BLOCK 6
+        {
+                enter_block_state,
+                process_block_event,
+                exit_block_state
+        }
+};
 
-int download_database() {
-    FILE *cards_file;
-    SAFE_OPENING_FILE(cards_file, "cards.txt", "r");
-    char_auto_ptr buffer;
-    size_t length = 0;
-    getline(&buffer, &length, cards_file);
-    cash_in_automate = atoi(buffer);
-    getline(&buffer, &length, cards_file);
-    size_of_database = atoi(buffer);
-    SAFE_MALLOC(cards, struct card, sizeof(struct card) * size_of_database);
-    for (int i = 0; i < size_of_database; ++i) {
-        getline(&buffer, &length, cards_file);
-        SAFE_MALLOC(cards[i].number, char, sizeof(char) * 16);
-        strncpy(cards[i].number, buffer, 16);
-        SAFE_MALLOC(cards[i].password, char, sizeof(char) * 4);
-        strncpy(cards[i].password, buffer + 17, 4);
-        cards[i].budget = atoi(buffer + 22);
-    }
-    fclose(cards_file);
-    return 0;
-}
+int user_state;
+
+
 
 int main() {
-    state = ASKING_LANGUAGE_STATE;
+    user_state = ASKING_LANGUAGE_STATE;
     download_database();
-    while (state != -1) {
-        SAFE_RUN(state_table[state].enter);
-        SAFE_RUN(state_table[state].process);
-        SAFE_RUN(state_table[state].exit);
+    while (user_state != -1) {
+        SAFE_RUN(user_state_table[user_state].enter);
+        SAFE_RUN(user_state_table[user_state].process);
+        SAFE_RUN(user_state_table[user_state].exit);
     }
     return 0;
 }

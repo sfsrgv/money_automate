@@ -6,9 +6,9 @@
 
 #include "char_reading.h"
 
-#define NUMBER_OF_STATES 9
+#define NUMBER_OF_USER_STATES 9
 
-enum state_names {
+enum user_state_names {
     WAITING_FOR_CARD_STATE,
     CARD_ENTERED_STATE,
     GETTING_PASSWORD_STATE,
