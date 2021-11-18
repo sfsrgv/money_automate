@@ -16,6 +16,7 @@ void free_char_auto_ptr(char **ptr);
             scanf("%d%c", &(num), &buffer);     \
         } while(0)
 
+// Reading line from console
 #define READ_LINE(line)                         \
         do {                                    \
             static size_t length = 0;           \
