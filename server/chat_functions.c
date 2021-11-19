@@ -8,14 +8,14 @@ int send_message(int socket_descriptor, char *message) {
     return CONTINUE;
 }
 
-int get_message(int socket_descriptor) {
-    char_auto_ptr server_message = (char *) malloc(MAX_MESSAGE_LENGTH * sizeof(char));
-    ssize_t length = recv(socket_descriptor, server_message, MAX_MESSAGE_LENGTH, 0);
+char* get_message(int socket_descriptor) {
+    char* client_message = (char *) malloc(MAX_MESSAGE_LENGTH * sizeof(char));
+    ssize_t length = recv(socket_descriptor, client_message, MAX_MESSAGE_LENGTH, 0);
     if (length == -1) {
         printf("ERROR IN GETTING\n");
-        return ERROR;
+        return "ERROR";
     }
-    server_message[length] = '\0';
-    printf("%s\n", server_message);
-    return CONTINUE;
+    client_message[length] = '\0';
+    printf("%s\n", client_message);
+    return client_message;
 }

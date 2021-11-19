@@ -84,37 +84,37 @@ struct state user_state_table[NUMBER_OF_USER_STATES] = {
 struct state admin_state_table[NUMBER_OF_ADMIN_STATES] = {
         // TURNING OFF 0
         {
-                enter_turning_off_state,
+                NULL,
                 process_turning_off_event,
                 exit_turning_off_state
         },
         // OFF 1
         {
-                enter_off_state,
+                NULL,
                 process_off_event,
                 exit_off_state
         },
         // TURNING ON 2
         {
-                enter_turning_on_state,
+                NULL,
                 process_turning_on_event,
                 exit_turning_on_state
         },
         // ON 3
         {
-                enter_on_state,
+                NULL,
                 process_on_event,
                 exit_on_state
         },
         // SHOW MONEY 4
         {
-                enter_show_money_state,
+                NULL,
                 process_show_money_event,
                 exit_show_money_state
         },
         // CHECKING 5
         {
-                enter_check_state,
+                NULL,
                 process_check_event,
                 exit_check_state
         },
@@ -127,8 +127,8 @@ struct state admin_state_table[NUMBER_OF_ADMIN_STATES] = {
 };
 
 int user_state;
-
-
+int admin_state;
+int buffer_socket_descriptor;
 
 int main() {
     /*user_state = ASKING_LANGUAGE_STATE;
@@ -164,21 +164,18 @@ int main() {
     struct sockaddr_in client_info;
     memset(&client_info, 0, sizeof(client_info));
     socklen_t socket_size = sizeof(client_info);
-    int buffer_socket_descriptor = accept(server_descriptor, (struct sockaddr *) &client_info, &socket_size);
+    buffer_socket_descriptor = accept(server_descriptor, (struct sockaddr *) &client_info, &socket_size);
     if (buffer_socket_descriptor == -1) {
         printf("Error in temporary socket creation");
         exit(1);
     }
-
-    while (1) {
-        if (get_message(buffer_socket_descriptor) == ERROR)
-            break;
-        char_auto_ptr message;
-        READ_LINE(message);
-        if (send_message(buffer_socket_descriptor, message) == ERROR)
-            break;
+    admin_state = OFF_STATE;
+    user_state = WAITING_FOR_CARD_STATE;
+    while (user_state != -1) {
+        SAFE_RUN(admin_state_table[user_state].enter);
+        SAFE_RUN(admin_state_table[user_state].process);
+        SAFE_RUN(admin_state_table[user_state].exit);
     }
-    printf("-------------------\n");
     close(buffer_socket_descriptor);
     close(server_descriptor);
     return 0;

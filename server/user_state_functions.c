@@ -14,7 +14,7 @@ extern int cash_in_automate;
 int language = ENGLISH;
 int previous_state = WAITING_FOR_CARD_STATE;
 int index_of_current_card;
-int command_index;
+int user_command_index;
 char *card_number;
 
 char *messages[15][2] = {
@@ -80,50 +80,30 @@ char *messages[15][2] = {
         }
 };
 
-void print_user_state_name(int i) {
+char *print_user_state_name(int i) {
     switch (i) {
-        case 0: {
-            printf("WAITING FOR CARD\n");
-            break;
-        }
-        case 1: {
-            printf("CARD ENTERED\n");
-            break;
-        }
-        case 2: {
-            printf("GETTING PASSWORD\n");
-            break;
-        }
-        case 3: {
-            printf("WAITING FOR COMMANDS\n");
-            break;
-        }
-        case 4: {
-            printf("SHOW BUDGET\n");
-            break;
-        }
-        case 5: {
-            printf("GET CASH\n");
-            break;
-        }
-        case 6: {
-            printf("MAKE DEPOSIT\n");
-            break;
-        }
-        case 7: {
-            printf("RETURN CARD\n");
-            break;
-        }
-        case 8: {
-            printf("ASKING LANGUAGE\n");
-            break;
-        }
-        case -1: {
-            printf("ERROR\n");
-            break;
-        }
+        case 0:
+            return "WAITING FOR CARD\n";
+        case 1:
+            return "CARD ENTERED\n";
+        case 2:
+            return "GETTING PASSWORD\n";
+        case 3:
+            return "WAITING FOR COMMANDS\n";
+        case 4:
+            return "SHOW BUDGET\n";
+        case 5:
+            return "GET CASH\n";
+        case 6:
+            return "MAKE DEPOSIT\n";
+        case 7:
+            return "RETURN CARD\n";
+        case 8:
+            return "ASKING LANGUAGE\n";
+        case -1:
+            return "ERROR\n";
         default:
-            printf("UNKNOWN STATE\n");
+            return "UNKNOWN STATE\n";
     }
 }
 
@@ -188,11 +168,11 @@ void enter_waiting_for_commands_state() {
 }
 
 void process_waiting_for_commands_event() {
-    READ_INT(command_index);
+    READ_INT(user_command_index);
 }
 
 void exit_waiting_for_commands_state() {
-    switch (command_index) {
+    switch (user_command_index) {
         case 1: {
             user_state = SHOW_BUDGET_STATE;
             break;

@@ -25,8 +25,7 @@ enum languages {
     RUSSIAN = 1
 };
 
-
-void print_user_state_name(int i);
+char *print_user_state_name(int i);
 
 void enter_waiting_for_card_state();
 

@@ -20,6 +20,6 @@ enum DIALOG_STATUS {
 int send_message(int socket_descriptor, char* message);
 
 // Getting messages
-int get_message(int socket_descriptor);
+char* get_message(int socket_descriptor);
 
 #endif //CHAT_FUNCTIONS_H

@@ -3,6 +3,9 @@
 
 #include "safe_macroses.h"
 #include "char_reading.h"
+#include "chat_functions.h"
+#include "asprintf.h"
+#include "user_state_functions.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,25 +30,17 @@ struct card {
 
 int download_database();
 
-void enter_turning_off_state();
-
 void process_turning_off_event();
 
 void exit_turning_off_state();
-
-void enter_off_state();
 
 void process_off_event();
 
 void exit_off_state();
 
-void enter_turning_on_state();
-
 void process_turning_on_event();
 
 void exit_turning_on_state();
-
-void enter_on_state();
 
 void process_on_event();
 
@@ -57,13 +52,9 @@ void process_block_event();
 
 void exit_block_state();
 
-void enter_show_money_state();
-
 void process_show_money_event();
 
 void exit_show_money_state();
-
-void enter_check_state();
 
 void process_check_event();
 
