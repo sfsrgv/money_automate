@@ -10,6 +10,7 @@ extern struct card *cards;
 extern int size_of_database;
 extern int user_state;
 extern int cash_in_automate;
+extern int card_in_automate;
 
 int language = ENGLISH;
 int previous_state = WAITING_FOR_CARD_STATE;
@@ -17,7 +18,7 @@ int index_of_current_card;
 int user_command_index;
 char *card_number;
 
-char *messages[15][2] = {
+char *messages[17][2] = {
         {
                 "-----------------\nEnter card:",
                 "-----------------\nВставьте карту:"
@@ -77,6 +78,14 @@ char *messages[15][2] = {
         {
                 "Operation made",
                 "Операция проведена"
+        },
+        {
+            "Automate if turned off",
+            "Банкомат выключен"
+        },
+        {
+            "Automate was blocked by administrator",
+            "Банкомат был заблокирован администратором"
         }
 };
 
@@ -122,6 +131,7 @@ void exit_waiting_for_card_state() {
 }
 
 void process_card_entered_event() {
+    card_in_automate = 1;
     for (int i = 0; i < size_of_database; ++i)
         if (strcmp(card_number, cards[i].number) == 0) {
             index_of_current_card = i;
@@ -251,6 +261,7 @@ void exit_make_deposit_state() {
 }
 
 void process_return_card_event() {
+    card_in_automate = 0;
     printf("%s\n", messages[7][language]);
 }
 

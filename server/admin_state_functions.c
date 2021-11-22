@@ -10,6 +10,7 @@ extern int buffer_socket_descriptor;
 extern int user_state;
 extern int is_working;
 extern int is_blocked;
+extern int previous_state;
 
 int download_database() {
     FILE *cards_file;
@@ -33,11 +34,6 @@ int download_database() {
     }
     fclose(cards_file);
     return 0;
-}
-
-void print_database() {
-    for (int i = 0; i < size_of_database; ++i)
-        printf("%s %s %d\n", cards[i].number, cards[i].password, cards[i].budget);
 }
 
 int save_database() {

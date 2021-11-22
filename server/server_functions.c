@@ -24,6 +24,5 @@ char* get_message(int socket_descriptor) {
         return "ERROR";
     }
     client_message[length] = '\0';
-    printf("[%s]\n", client_message);
     return client_message;
 }

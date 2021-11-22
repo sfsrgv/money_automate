@@ -20,7 +20,9 @@
 
 struct state {
     void (*enter)();
+
     void (*process)();
+
     void (*exit)();
 };
 
@@ -126,13 +128,17 @@ struct state admin_state_table[NUMBER_OF_ADMIN_STATES] = {
         }
 };
 
+extern char *messages[17][2];
+extern int language;
+
 int user_state;
 int admin_state;
 int buffer_socket_descriptor;
 int is_working = 0;
 int is_blocked = 0;
+int card_in_automate = 0;
 
-void *work_with_admin(void* args) {
+void *work_with_admin(void *args) {
     while (user_state != -1) {
         SAFE_RUN(admin_state_table[admin_state].enter);
         SAFE_RUN(admin_state_table[admin_state].process);
@@ -142,14 +148,6 @@ void *work_with_admin(void* args) {
 }
 
 int main() {
-    /*user_state = ASKING_LANGUAGE_STATE;
-    download_database();
-    while (user_state != -1) {
-        SAFE_RUN(user_state_table[user_state].enter);
-        SAFE_RUN(user_state_table[user_state].process);
-        SAFE_RUN(user_state_table[user_state].exit);
-    }*/
-
     int server_descriptor;
     SAFE_SOCKET_CREATION(server_descriptor, AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_info;
@@ -159,12 +157,29 @@ int main() {
     SAFE_ACCEPT(buffer_socket_descriptor, server_descriptor);
 
     admin_state = OFF_STATE;
-    user_state = WAITING_FOR_CARD_STATE;
-
     pthread_t admin_thread;
     pthread_create(&admin_thread, NULL, work_with_admin, NULL);
-    pthread_join(admin_thread, NULL);
+    user_state = ASKING_LANGUAGE_STATE;
+    while (user_state != -1) {
+        if (is_working && !is_blocked) {
+            SAFE_RUN(user_state_table[user_state].enter);
+            SAFE_RUN(user_state_table[user_state].process);
+            SAFE_RUN(user_state_table[user_state].exit);
+        } else {
 
+            if (is_blocked)
+                printf("%s\n", messages[16][language]);
+            else {
+                printf("%s\n", messages[15][language]);
+                if (card_in_automate) {
+                    process_return_card_event();
+                    exit_return_card_state();
+                }
+            }
+            sleep(5);
+        }
+    }
+    pthread_join(admin_thread, NULL);
     close(buffer_socket_descriptor);
     close(server_descriptor);
     return 0;
