@@ -8,21 +8,34 @@
 
 #define NUMBER_OF_USER_STATES 9
 
-enum user_state_names {
-    WAITING_FOR_CARD_STATE,
-    CARD_ENTERED_STATE,
-    GETTING_PASSWORD_STATE,
-    WAITING_FOR_COMMANDS_STATE,
-    SHOW_BUDGET_STATE,
-    GET_CASH_STATE,
-    MAKE_DEPOSIT_STATE,
-    RETURN_CARD_STATE,
-    ASKING_LANGUAGE_STATE
+enum AUTOMATE_STATE {
+    AUTOMATE_ON,
+    AUTOMATE_OFF,
+    AUTOMATE_BLOCKED,
+    AUTOMATE_ERROR
 };
 
-enum languages {
-    ENGLISH = 0,
-    RUSSIAN = 1
+enum USER_STATE {
+    USER_WAITING_FOR_CARD,
+    USER_CARD_ENTERED,
+    USER_GETTING_PASSWORD,
+    USER_WAITING_FOR_COMMANDS,
+    USER_SHOW_BUDGET,
+    USER_GET_CASH,
+    USER_MAKE_DEPOSIT,
+    USER_RETURN_CARD,
+    USER_ASKING_LANGUAGE
+};
+
+enum LANGUAGES {
+    ENGLISH,
+    RUSSIAN
+};
+
+struct card {
+    char *number;
+    char *password;
+    int budget;
 };
 
 char *print_user_state_name(int i);

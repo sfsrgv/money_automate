@@ -1,19 +1,14 @@
 #include "user_state_functions.h"
 
-struct card {
-    char *number;
-    char *password;
-    int budget;
-};
-
 extern struct card *cards;
 extern int size_of_database;
 extern int user_state;
 extern int cash_in_automate;
 extern int card_in_automate;
+extern int automate_state;
 
-int language = ENGLISH;
-int previous_state = WAITING_FOR_CARD_STATE;
+enum LANGUAGES language = ENGLISH;
+int previous_state = USER_WAITING_FOR_CARD;
 int index_of_current_card;
 int user_command_index;
 char *card_number;
@@ -80,12 +75,12 @@ char *messages[17][2] = {
                 "Операция проведена"
         },
         {
-            "Automate if turned off",
-            "Банкомат выключен"
+                "Automate if turned off",
+                "Банкомат выключен"
         },
         {
-            "Automate was blocked by administrator",
-            "Банкомат был заблокирован администратором"
+                "Automate was blocked by administrator",
+                "Банкомат был заблокирован администратором"
         }
 };
 
@@ -110,7 +105,7 @@ char *print_user_state_name(int i) {
         case 8:
             return "ASKING LANGUAGE\n";
         case -1:
-            return "ERROR\n";
+            return "AUTOMATE_ERROR\n";
         default:
             return "UNKNOWN STATE\n";
     }
@@ -127,7 +122,7 @@ void process_waiting_for_card_event() {
 }
 
 void exit_waiting_for_card_state() {
-    user_state = CARD_ENTERED_STATE;
+    user_state = USER_CARD_ENTERED;
 }
 
 void process_card_entered_event() {
@@ -143,9 +138,9 @@ void process_card_entered_event() {
 
 void exit_card_entered_state() {
     if (index_of_current_card == -1)
-        user_state = RETURN_CARD_STATE;
+        user_state = USER_RETURN_CARD;
     else
-        user_state = GETTING_PASSWORD_STATE;
+        user_state = USER_GETTING_PASSWORD;
 }
 
 void enter_getting_password_state() {
@@ -168,9 +163,9 @@ void process_getting_password_event() {
 
 void exit_getting_password_state() {
     if (index_of_current_card == -1)
-        user_state = RETURN_CARD_STATE;
+        user_state = USER_RETURN_CARD;
     else
-        user_state = WAITING_FOR_COMMANDS_STATE;
+        user_state = USER_WAITING_FOR_COMMANDS;
 }
 
 void enter_waiting_for_commands_state() {
@@ -184,29 +179,29 @@ void process_waiting_for_commands_event() {
 void exit_waiting_for_commands_state() {
     switch (user_command_index) {
         case 1: {
-            user_state = SHOW_BUDGET_STATE;
+            user_state = USER_SHOW_BUDGET;
             break;
         }
         case 2: {
-            user_state = GET_CASH_STATE;
+            user_state = USER_GET_CASH;
             break;
         }
         case 3: {
-            user_state = MAKE_DEPOSIT_STATE;
+            user_state = USER_MAKE_DEPOSIT;
             break;
         }
         case 4: {
-            user_state = RETURN_CARD_STATE;
+            user_state = USER_RETURN_CARD;
             break;
         }
         case 5: {
-            previous_state = WAITING_FOR_COMMANDS_STATE;
-            user_state = ASKING_LANGUAGE_STATE;
+            previous_state = USER_WAITING_FOR_COMMANDS;
+            user_state = USER_ASKING_LANGUAGE;
             break;
         }
         default: {
             printf("%s\n", messages[9][language]);
-            user_state = WAITING_FOR_COMMANDS_STATE;
+            user_state = USER_WAITING_FOR_COMMANDS;
             break;
         }
     }
@@ -217,7 +212,7 @@ void process_show_budget_event() {
 }
 
 void exit_show_budget_state() {
-    user_state = WAITING_FOR_COMMANDS_STATE;
+    user_state = USER_WAITING_FOR_COMMANDS;
 }
 
 void enter_get_cash_state() {
@@ -241,7 +236,7 @@ void process_get_cash_event() {
 }
 
 void exit_get_cash_state() {
-    user_state = WAITING_FOR_COMMANDS_STATE;
+    user_state = USER_WAITING_FOR_COMMANDS;
 }
 
 void enter_make_deposit_state() {
@@ -257,7 +252,7 @@ void process_make_deposit_event() {
 }
 
 void exit_make_deposit_state() {
-    user_state = WAITING_FOR_COMMANDS_STATE;
+    user_state = USER_WAITING_FOR_COMMANDS;
 }
 
 void process_return_card_event() {
@@ -266,8 +261,8 @@ void process_return_card_event() {
 }
 
 void exit_return_card_state() {
-    user_state = ASKING_LANGUAGE_STATE;
-    previous_state = WAITING_FOR_CARD_STATE;
+    user_state = USER_ASKING_LANGUAGE;
+    previous_state = USER_WAITING_FOR_CARD;
 }
 
 void enter_asking_language_state() {

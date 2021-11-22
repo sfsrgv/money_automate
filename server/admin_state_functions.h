@@ -12,14 +12,14 @@
 
 #define NUMBER_OF_ADMIN_STATES 7
 
-enum admin_state_names {
-    TURNING_OFF_STATE,
-    OFF_STATE,
-    TURNING_ON_STATE,
-    ON_STATE,
-    SHOW_MONEY_STATE,
-    CHECK_STATE,
-    BLOCK_STATE
+enum ADMIN_STATE {
+    ADMIN_TURNING_OFF,
+    ADMIN_OFF,
+    ADMIN_TURNING_ON,
+    ADMIN_ON,
+    ADMIN_SHOW_MONEY,
+    ADMIN_CHECK,
+    ADMIN_BLOCK
 };
 
 struct card {

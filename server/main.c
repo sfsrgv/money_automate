@@ -84,25 +84,25 @@ struct state user_state_table[NUMBER_OF_USER_STATES] = {
 };
 
 struct state admin_state_table[NUMBER_OF_ADMIN_STATES] = {
-        // TURNING OFF 0
+        // TURNING AUTOMATE_OFF 0
         {
                 NULL,
                 process_turning_off_event,
                 exit_turning_off_state
         },
-        // OFF 1
+        // AUTOMATE_OFF 1
         {
                 NULL,
                 process_off_event,
                 exit_off_state
         },
-        // TURNING ON 2
+        // TURNING AUTOMATE_ON 2
         {
                 NULL,
                 process_turning_on_event,
                 exit_turning_on_state
         },
-        // ON 3
+        // AUTOMATE_ON 3
         {
                 NULL,
                 process_on_event,
@@ -129,13 +129,13 @@ struct state admin_state_table[NUMBER_OF_ADMIN_STATES] = {
 };
 
 extern char *messages[17][2];
-extern int language;
+extern enum LANGUAGES language;
 
-int user_state;
-int admin_state;
+enum USER_STATE user_state;
+enum ADMIN_STATE admin_state;
+enum AUTOMATE_STATE automate_state;
+
 int buffer_socket_descriptor;
-int is_working = 0;
-int is_blocked = 0;
 int card_in_automate = 0;
 
 void *work_with_admin(void *args) {
@@ -156,18 +156,18 @@ int main() {
     SAFE_LISTEN(server_descriptor, BACKLOG);
     SAFE_ACCEPT(buffer_socket_descriptor, server_descriptor);
 
-    admin_state = OFF_STATE;
+    admin_state = ADMIN_OFF;
+    automate_state = AUTOMATE_ON;
     pthread_t admin_thread;
     pthread_create(&admin_thread, NULL, work_with_admin, NULL);
-    user_state = ASKING_LANGUAGE_STATE;
-    while (user_state != -1) {
-        if (is_working && !is_blocked) {
+    user_state = USER_ASKING_LANGUAGE;
+    while (automate_state != AUTOMATE_ERROR) {
+        if (automate_state == AUTOMATE_ON) {
             SAFE_RUN(user_state_table[user_state].enter);
             SAFE_RUN(user_state_table[user_state].process);
             SAFE_RUN(user_state_table[user_state].exit);
         } else {
-
-            if (is_blocked)
+            if (automate_state == AUTOMATE_BLOCKED)
                 printf("%s\n", messages[16][language]);
             else {
                 printf("%s\n", messages[15][language]);
