@@ -24,12 +24,19 @@ int download_database() {
         getline(&buffer, &length, cards_file);
         SAFE_MALLOC(cards[i].number, char, sizeof(char) * 16);
         strncpy(cards[i].number, buffer, 16);
+        cards[i].number[16] = '\0';
         SAFE_MALLOC(cards[i].password, char, sizeof(char) * 4);
         strncpy(cards[i].password, buffer + 17, 4);
+        cards[i].password[4] = '\0';
         cards[i].budget = atoi(buffer + 22);
     }
     fclose(cards_file);
     return 0;
+}
+
+void print_database() {
+    for (int i = 0; i < size_of_database; ++i)
+        printf("%s %s %d\n", cards[i].number, cards[i].password, cards[i].budget);
 }
 
 int save_database() {
@@ -46,6 +53,7 @@ int save_database() {
 void process_turning_off_event() {
     save_database();
     is_working = 0;
+    send_message(buffer_socket_descriptor, "AUTOMATE TURNED OFF");
 }
 
 void exit_turning_off_state() {
@@ -75,10 +83,10 @@ void exit_turning_on_state() {
 }
 
 void process_on_event() {
-    send_message(buffer_socket_descriptor, "CHOOSE COMMAND:\n1 - BLOCK\n2 - SHOW MONEY\n3 - CHECK AUTOMATE STATE");
+    send_message(buffer_socket_descriptor, "CHOOSE COMMAND:\n1 - BLOCK\n2 - SHOW MONEY\n3 - CHECK AUTOMATE STATE\n4 - TURN OFF");
     char_auto_ptr client_message;
     client_message = get_message(buffer_socket_descriptor);
-    while (atoi(client_message) < 0 || atoi(client_message) > 3) {
+    while (atoi(client_message) < 0 || atoi(client_message) > 4) {
         send_message(buffer_socket_descriptor, "INCORRECT COMMAND. TRY AGAIN");
         client_message = get_message(buffer_socket_descriptor);
     }
@@ -97,6 +105,10 @@ void exit_on_state() {
         }
         case 3: {
             admin_state = CHECK_STATE;
+            break;
+        }
+        case 4: {
+            admin_state = TURNING_OFF_STATE;
             break;
         }
         default:
