@@ -1,9 +1,9 @@
 #ifndef SERVER_ADMIN_STATE_FUNCTIONS_H
 #define SERVER_ADMIN_STATE_FUNCTIONS_H
 
-#include "safe_macroses.h"
+#include "../safe_macroses.h"
 #include "char_reading.h"
-#include "chat_functions.h"
+#include "server_functions.h"
 #include "asprintf.h"
 #include "user_state_functions.h"
 

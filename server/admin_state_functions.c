@@ -6,6 +6,7 @@ struct card *cards;
 int size_of_database;
 int cash_in_automate;
 int admin_command_index;
+
 extern int admin_state;
 extern int buffer_socket_descriptor;
 extern int user_state;

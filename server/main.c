@@ -6,23 +6,20 @@
 // gcc main.c user_state_functions.c char_reading.c
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 
+#include "../safe_macroses.h"
 #include "user_state_functions.h"
 #include "admin_state_functions.h"
-#include "safe_macroses.h"
 #include "socket_constants.h"
-#include "chat_functions.h"
+#include "server_functions.h"
 
 struct state {
     void (*enter)();
-
     void (*process)();
-
     void (*exit)();
 };
 
@@ -141,46 +138,23 @@ int main() {
         SAFE_RUN(user_state_table[user_state].exit);
     }*/
 
-     int server_descriptor = socket(AF_INET, SOCK_STREAM, 0);;
-     if (server_descriptor == -1) {
-         printf("Error while creating socket");
-         return 1;
-     }
+    int server_descriptor;
+    SAFE_SOCKET_CREATION(server_descriptor, AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in server_info;
+    initialize_sockaddr_in(&server_info);
+    SAFE_BIND(server_descriptor, server_info);
+    SAFE_LISTEN(server_descriptor, BACKLOG);
+    SAFE_ACCEPT(buffer_socket_descriptor, server_descriptor);
 
-     struct sockaddr_in server_info;
-     memset(&server_info, 0, sizeof(server_info));
-     server_info.sin_family = AF_INET;
-     server_info.sin_addr.s_addr = IP_ADDRESS;
-     server_info.sin_port = PORT_NUMBER;
+    admin_state = OFF_STATE;
+    user_state = WAITING_FOR_CARD_STATE;
+    while (user_state != -1) {
+        SAFE_RUN(admin_state_table[admin_state].enter);
+        SAFE_RUN(admin_state_table[admin_state].process);
+        SAFE_RUN(admin_state_table[admin_state].exit);
+    }
 
-     if (bind(server_descriptor, (struct sockaddr *) &server_info, sizeof(server_info)) == -1) {
-         printf("Error while binding");
-         return 1;
-     }
-
-     if (listen(server_descriptor, BACKLOG) == -1) {
-         printf("Error while listening");
-         return 1;
-     }
-
-     struct sockaddr_in client_info;
-     memset(&client_info, 0, sizeof(client_info));
-     socklen_t socket_size = sizeof(client_info);
-     buffer_socket_descriptor = accept(server_descriptor, (struct sockaddr *) &client_info, &socket_size);
-     if (buffer_socket_descriptor == -1) {
-         printf("Error in temporary socket creation");
-         exit(1);
-     }
-     admin_state = OFF_STATE;
-     user_state = WAITING_FOR_CARD_STATE;
-     while (user_state != -1) {
-
-         SAFE_RUN(admin_state_table[admin_state].enter);
-         SAFE_RUN(admin_state_table[admin_state].process);
-         SAFE_RUN(admin_state_table[admin_state].exit);
-         print_database();
-     }
-     close(buffer_socket_descriptor);
-     close(server_descriptor);
+    close(buffer_socket_descriptor);
+    close(server_descriptor);
     return 0;
 }

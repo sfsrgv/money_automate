@@ -1,4 +1,12 @@
-#include "chat_functions.h"
+#include "server_functions.h"
+
+
+void initialize_sockaddr_in(struct sockaddr_in* server_info) {
+    memset(server_info, 0, sizeof(*server_info));
+    server_info->sin_family = AF_INET;
+    server_info->sin_addr.s_addr = IP_ADDRESS;
+    server_info->sin_port = PORT_NUMBER;
+}
 
 int send_message(int socket_descriptor, char *message) {
     if (send(socket_descriptor, message, MAX_MESSAGE_LENGTH, 0) == -1) {
