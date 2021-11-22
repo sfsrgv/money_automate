@@ -32,8 +32,6 @@ int download_database();
 
 int save_database();
 
-void print_database();
-
 void process_turning_off_event();
 
 void exit_turning_off_state();

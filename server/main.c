@@ -3,13 +3,14 @@
 // Make a money automate
 //
 // To compile program use command:
-// gcc main.c user_state_functions.c char_reading.c
+// gcc -pthread main.c user_state_functions.c char_reading.c admin_state_functions.c server_functions.c
 
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "../safe_macroses.h"
 #include "user_state_functions.h"
@@ -128,6 +129,17 @@ struct state admin_state_table[NUMBER_OF_ADMIN_STATES] = {
 int user_state;
 int admin_state;
 int buffer_socket_descriptor;
+int is_working = 0;
+int is_blocked = 0;
+
+void *work_with_admin(void* args) {
+    while (user_state != -1) {
+        SAFE_RUN(admin_state_table[admin_state].enter);
+        SAFE_RUN(admin_state_table[admin_state].process);
+        SAFE_RUN(admin_state_table[admin_state].exit);
+    }
+    return NULL;
+}
 
 int main() {
     /*user_state = ASKING_LANGUAGE_STATE;
@@ -148,11 +160,10 @@ int main() {
 
     admin_state = OFF_STATE;
     user_state = WAITING_FOR_CARD_STATE;
-    while (user_state != -1) {
-        SAFE_RUN(admin_state_table[admin_state].enter);
-        SAFE_RUN(admin_state_table[admin_state].process);
-        SAFE_RUN(admin_state_table[admin_state].exit);
-    }
+
+    pthread_t admin_thread;
+    pthread_create(&admin_thread, NULL, work_with_admin, NULL);
+    pthread_join(admin_thread, NULL);
 
     close(buffer_socket_descriptor);
     close(server_descriptor);

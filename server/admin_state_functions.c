@@ -1,7 +1,5 @@
 #include "admin_state_functions.h"
 
-int is_working = 0;
-int is_blocked = 0;
 struct card *cards;
 int size_of_database;
 int cash_in_automate;
@@ -10,6 +8,8 @@ int admin_command_index;
 extern int admin_state;
 extern int buffer_socket_descriptor;
 extern int user_state;
+extern int is_working;
+extern int is_blocked;
 
 int download_database() {
     FILE *cards_file;
