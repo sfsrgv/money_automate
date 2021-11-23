@@ -5,8 +5,6 @@
 #include <unistd.h>
 
 #include "../safe_macroses.h"
-#include "socket_constants.h"
-#include "char_reading.h"
 #include "char_reading.h"
 #include "client_functions.h"
 

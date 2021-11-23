@@ -1,15 +1,18 @@
 #include "admin_state_functions.h"
-
-struct card *cards;
-int size_of_database;
-int cash_in_automate;
-int admin_command_index;
+#include "blowfish_algorithm.h"
 
 extern int admin_state;
 extern int buffer_socket_descriptor;
 extern int user_state;
 extern int previous_state;
 extern int automate_state;
+
+struct card *cards;
+int size_of_database;
+int cash_in_automate;
+int admin_command_index;
+
+char* database_file;
 
 int download_database() {
     FILE *cards_file;
@@ -35,6 +38,40 @@ int download_database() {
     return 0;
 }
 
+int parse_database(char* text_database) {
+    //printf("parsing:\n%s\n", text_database);
+    char_auto_ptr buffer;
+    SAFE_MALLOC(buffer, char, sizeof(char) * 10);
+    strncpy(buffer, text_database, 10);
+    //printf("buffer:\n%s\n", buffer);
+    int current_index = 11;
+    cash_in_automate = atoi(buffer);
+    free(buffer);
+    SAFE_MALLOC(buffer, char, sizeof(char) * 10);
+    strncpy(buffer, text_database + current_index, 10);
+    //printf("buffer:\n%s\n", buffer);
+    size_of_database = atoi(buffer);
+    current_index += 11;
+    SAFE_MALLOC(cards, struct card, sizeof(struct card) * size_of_database);
+    //printf("size: %d\n", size_of_database);
+    for (int i = 0; i < size_of_database; ++i) {
+        free(buffer);
+        SAFE_MALLOC(buffer, char, sizeof(char) * 26);
+        strncpy(buffer, text_database + current_index, 26);
+        //printf("buffer %-2d: %s\n",i, buffer);
+        current_index += 27;
+        SAFE_MALLOC(cards[i].number, char, sizeof(char) * 16);
+        strncpy(cards[i].number, buffer, 16);
+        cards[i].number[16] = '\0';
+        SAFE_MALLOC(cards[i].password, char, sizeof(char) * 4);
+        strncpy(cards[i].password, buffer + 17, 4);
+        cards[i].password[4] = '\0';
+        cards[i].budget = atoi(buffer + 22);
+        //printf("card   %-2d: %s %s %d\n", i, cards[i].number, cards[i].password, cards[i].budget);
+    }
+    return 0;
+}
+
 int save_database() {
     FILE *cards_file;
     SAFE_OPENING_FILE(cards_file, "cards.txt", "w");
@@ -45,11 +82,18 @@ int save_database() {
     return 0;
 }
 
+char* database_to_string() {
+    char* response = "";
+    asprintf(&response, "%010d\n%010d\n", cash_in_automate, size_of_database);
+    for (int i = 0; i < size_of_database; ++i)
+        asprintf(&response, "%s%s %s %04d\n", response, cards[i].number, cards[i].password, cards[i].budget);
+    return response;
+}
+
 void process_turning_off_event() {
-    if (save_database() == 1) {
-        automate_state = AUTOMATE_ERROR;
-        return;
-    }
+    char_auto_ptr line = database_to_string();
+    printf("DB:\n%s\n", line);
+    blowfish_for_database(CODE, line);
     send_message(buffer_socket_descriptor, "AUTOMATE TURNED OFF");
 }
 
@@ -71,10 +115,14 @@ void exit_off_state() {
 }
 
 void process_turning_on_event() {
-    if (download_database() == 1) {
+    char* line ="";
+    blowfish_for_database(DECODE, line);
+   // printf("\ndecoded:\n%s\n",database_file);
+    if (parse_database(database_file) == 1) {
         automate_state = AUTOMATE_ERROR;
         return;
     }
+   //download_database();
     automate_state = AUTOMATE_ON;
 }
 

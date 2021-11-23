@@ -3,7 +3,7 @@
 // Make a money automate
 //
 // To compile program use command:
-// gcc -pthread main.c user_state_functions.c char_reading.c admin_state_functions.c server_functions.c
+// gcc -pthread main.c user_state_functions.c char_reading.c admin_state_functions.c server_functions.c blowfish_algorithm.c string_and_uin64_functions.c
 
 #include <stdio.h>
 #include <string.h>
@@ -17,6 +17,7 @@
 #include "admin_state_functions.h"
 #include "socket_constants.h"
 #include "server_functions.h"
+#include "blowfish_algorithm.h"
 
 struct state {
     void (*enter)();
@@ -154,10 +155,9 @@ int main() {
     initialize_sockaddr_in(&server_info);
     SAFE_BIND(server_descriptor, server_info);
     SAFE_LISTEN(server_descriptor, BACKLOG);
-    SAFE_ACCEPT(buffer_socket_descriptor, server_descriptor);
-
+    SAFE_ACCEPT(buffer_socket_descriptor, server_descriptor);\
     admin_state = ADMIN_OFF;
-    automate_state = AUTOMATE_ON;
+    automate_state = AUTOMATE_OFF;
     pthread_t admin_thread;
     pthread_create(&admin_thread, NULL, work_with_admin, NULL);
     user_state = USER_ASKING_LANGUAGE;

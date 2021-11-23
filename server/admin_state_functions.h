@@ -22,15 +22,13 @@ enum ADMIN_STATE {
     ADMIN_BLOCK
 };
 
-struct card {
-    char *number;
-    char *password;
-    int budget;
-};
-
 int download_database();
 
+int parse_database(char* text_database);
+
 int save_database();
+
+char* database_to_string();
 
 void process_turning_off_event();
 
