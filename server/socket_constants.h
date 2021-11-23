@@ -7,4 +7,4 @@
 #define IP_ADDRESS inet_addr("127.0.0.1")
 #define BACKLOG 5
 
-#endif //CLIENT_SOCKET_CONSTANTS_H
+#endif //SOCKET_CONSTANTS_H

@@ -1,5 +1,4 @@
 #include "admin_state_functions.h"
-#include "blowfish_algorithm.h"
 
 extern int admin_state;
 extern int buffer_socket_descriptor;
@@ -11,74 +10,97 @@ struct card *cards;
 int size_of_database;
 int cash_in_automate;
 int admin_command_index;
+char* database_text_format;
 
-char* database_file;
+struct state admin_state_table[NUMBER_OF_ADMIN_STATES] = {
+        // TURNING AUTOMATE_OFF 0
+        {
+                NULL,
+                process_turning_off_event,
+                exit_turning_off_state
+        },
+        // AUTOMATE_OFF 1
+        {
+                NULL,
+                process_off_event,
+                exit_off_state
+        },
+        // TURNING AUTOMATE_ON 2
+        {
+                NULL,
+                process_turning_on_event,
+                exit_turning_on_state
+        },
+        // AUTOMATE_ON 3
+        {
+                NULL,
+                process_on_event,
+                exit_on_state
+        },
+        // SHOW MONEY 4
+        {
+                NULL,
+                process_show_money_event,
+                exit_show_money_state
+        },
+        // CHECKING 5
+        {
+                NULL,
+                process_check_event,
+                exit_check_state
+        },
+        // BLOCK 6
+        {
+                enter_block_state,
+                process_block_event,
+                exit_block_state
+        }
+};
 
-int download_database() {
-    FILE *cards_file;
-    SAFE_OPENING_FILE(cards_file, "cards.txt", "r");
-    char_auto_ptr buffer;
-    size_t length = 0;
-    getline(&buffer, &length, cards_file);
-    cash_in_automate = atoi(buffer);
-    getline(&buffer, &length, cards_file);
-    size_of_database = atoi(buffer);
-    SAFE_MALLOC(cards, struct card, sizeof(struct card) * size_of_database);
-    for (int i = 0; i < size_of_database; ++i) {
-        getline(&buffer, &length, cards_file);
-        SAFE_MALLOC(cards[i].number, char, sizeof(char) * 16);
-        strncpy(cards[i].number, buffer, 16);
-        cards[i].number[16] = '\0';
-        SAFE_MALLOC(cards[i].password, char, sizeof(char) * 4);
-        strncpy(cards[i].password, buffer + 17, 4);
-        cards[i].password[4] = '\0';
-        cards[i].budget = atoi(buffer + 22);
+void *work_with_admin(void *args) {
+    while (automate_state != AUTOMATE_ERROR) {
+        SAFE_RUN(admin_state_table[admin_state].enter);
+        SAFE_RUN(admin_state_table[admin_state].process);
+        SAFE_RUN(admin_state_table[admin_state].exit);
     }
-    fclose(cards_file);
-    return 0;
+    return NULL;
 }
 
-int parse_database(char* text_database) {
-    //printf("parsing:\n%s\n", text_database);
+int parse_database() {
+    // Getting amount of cash
     char_auto_ptr buffer;
     SAFE_MALLOC(buffer, char, sizeof(char) * 10);
-    strncpy(buffer, text_database, 10);
-    //printf("buffer:\n%s\n", buffer);
+    STRNCPY_WITH_END_SYMBOL(buffer, database_text_format, 10);
     int current_index = 11;
     cash_in_automate = atoi(buffer);
     free(buffer);
+
+    // Getting size of DB
     SAFE_MALLOC(buffer, char, sizeof(char) * 10);
-    strncpy(buffer, text_database + current_index, 10);
-    //printf("buffer:\n%s\n", buffer);
+    STRNCPY_WITH_END_SYMBOL(buffer, database_text_format + current_index, 10);
     size_of_database = atoi(buffer);
     current_index += 11;
+
+    // Getting cards info
     SAFE_MALLOC(cards, struct card, sizeof(struct card) * size_of_database);
-    //printf("size: %d\n", size_of_database);
     for (int i = 0; i < size_of_database; ++i) {
         free(buffer);
         SAFE_MALLOC(buffer, char, sizeof(char) * 26);
-        strncpy(buffer, text_database + current_index, 26);
-        //printf("buffer %-2d: %s\n",i, buffer);
+        STRNCPY_WITH_END_SYMBOL(buffer, database_text_format + current_index, 26);
         current_index += 27;
-        SAFE_MALLOC(cards[i].number, char, sizeof(char) * 16);
-        strncpy(cards[i].number, buffer, 16);
-        cards[i].number[16] = '\0';
-        SAFE_MALLOC(cards[i].password, char, sizeof(char) * 4);
-        strncpy(cards[i].password, buffer + 17, 4);
-        cards[i].password[4] = '\0';
-        cards[i].budget = atoi(buffer + 22);
-        //printf("card   %-2d: %s %s %d\n", i, cards[i].number, cards[i].password, cards[i].budget);
-    }
-    return 0;
-}
 
-int save_database() {
-    FILE *cards_file;
-    SAFE_OPENING_FILE(cards_file, "cards.txt", "w");
-    fprintf(cards_file, "%d\n%d\n", cash_in_automate, size_of_database);
-    for (int i = 0; i < size_of_database; ++i)
-        fprintf(cards_file, "%s %s %d\n", cards[i].number, cards[i].password, cards[i].budget);
-    fclose(cards_file);
+        // Card number
+        SAFE_MALLOC(cards[i].number, char, sizeof(char) * 16);
+        STRNCPY_WITH_END_SYMBOL(cards[i].number, buffer, 16);
+
+        // Password
+        SAFE_MALLOC(cards[i].password, char, sizeof(char) * 4);
+        STRNCPY_WITH_END_SYMBOL(cards[i].password, buffer + 17, 4);
+
+        // Budget
+        cards[i].budget = atoi(buffer + 22);
+    }
+    free(database_text_format);
     return 0;
 }
 
@@ -91,9 +113,8 @@ char* database_to_string() {
 }
 
 void process_turning_off_event() {
-    char_auto_ptr line = database_to_string();
-    printf("DB:\n%s\n", line);
-    blowfish_for_database(CODE, line);
+    database_text_format = database_to_string();
+    blowfish_for_database(CODE);
     send_message(buffer_socket_descriptor, "AUTOMATE TURNED OFF");
 }
 
@@ -115,14 +136,11 @@ void exit_off_state() {
 }
 
 void process_turning_on_event() {
-    char* line ="";
-    blowfish_for_database(DECODE, line);
-   // printf("\ndecoded:\n%s\n",database_file);
-    if (parse_database(database_file) == 1) {
+    blowfish_for_database(DECODE);
+    if (parse_database() == 1) {
         automate_state = AUTOMATE_ERROR;
         return;
     }
-   //download_database();
     automate_state = AUTOMATE_ON;
 }
 
@@ -183,7 +201,7 @@ void exit_block_state() {
 
 void process_show_money_event() {
     char_auto_ptr message = "AUTOMATE HAS ";
-    asprintf(&message, "%s%d", message, cash_in_automate);
+    asprintf(&message, "%s%d$. PRESS ENTER TO CONTINUE.", message, cash_in_automate);
     send_message(buffer_socket_descriptor, message);
     get_message(buffer_socket_descriptor);
 }
@@ -194,7 +212,7 @@ void exit_show_money_state() {
 
 void process_check_event() {
     char_auto_ptr message = "USER STATE IS ";
-    asprintf(&message, "%s%s", message, print_user_state_name(user_state));
+    asprintf(&message, "%s%s. PRESS ENTER TO CONTINUE", message, print_user_state_name(user_state));
     send_message(buffer_socket_descriptor, message);
     get_message(buffer_socket_descriptor);
 }

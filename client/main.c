@@ -9,19 +9,17 @@
 #include "client_functions.h"
 
 int main() {
+    // Set up settings to make connection
     int client_descriptor;
     SAFE_SOCKET_CREATION(client_descriptor, AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in client_info;
-    initialize_sockaddr_in(&client_info);
+    initialize_socket_information(&client_info);
     SAFE_CONNECT(client_descriptor, client_info);
 
+    // Sending commands to server
     while(1) {
         char_auto_ptr command;
         READ_LINE(command);
-        if (command == NULL) {
-            printf("ERROR WHILE READING COMMAND\n");
-            break;
-        }
         if (send_message(client_descriptor, command) == ERROR)
             break;
         if (get_message(client_descriptor) == ERROR)

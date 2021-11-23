@@ -4,14 +4,71 @@ extern struct card *cards;
 extern int size_of_database;
 extern int user_state;
 extern int cash_in_automate;
-extern int card_in_automate;
 extern int automate_state;
 
 enum LANGUAGES language = ENGLISH;
 int previous_state = USER_WAITING_FOR_CARD;
-int index_of_current_card;
-int user_command_index;
+int index_of_current_card = 0;
+int user_command_index = 0;
+int card_in_automate = 0;
 char *card_number;
+
+struct state user_state_table[NUMBER_OF_USER_STATES] = {
+        // WAITING FOR CARD 0
+        {
+                enter_waiting_for_card_state,
+                process_waiting_for_card_event,
+                exit_waiting_for_card_state
+        },
+        // CARD ENTERED 1
+        {
+                NULL,
+                process_card_entered_event,
+                exit_card_entered_state
+        },
+        // GETTING PASSWORD 2
+        {
+                enter_getting_password_state,
+                process_getting_password_event,
+                exit_getting_password_state
+        },
+        // WAITING FOR COMMANDS 3
+        {
+                enter_waiting_for_commands_state,
+                process_waiting_for_commands_event,
+                exit_waiting_for_commands_state
+        },
+        // SHOW BUDGET 4
+        {
+                NULL,
+                process_show_budget_event,
+                exit_show_budget_state
+        },
+        // GET CASH 5
+        {
+                enter_get_cash_state,
+                process_get_cash_event,
+                exit_get_cash_state
+        },
+        // MAKE DEPOSIT 6
+        {
+                enter_make_deposit_state,
+                process_make_deposit_event,
+                exit_make_deposit_state
+        },
+        // RETURN CARD 7
+        {
+                NULL,
+                process_return_card_event,
+                exit_return_card_state
+        },
+        // ASKING LANGUAGE 8
+        {
+                enter_asking_language_state,
+                process_asking_language_event,
+                exit_asking_language_state
+        }
+};
 
 char *messages[17][2] = {
         {
@@ -87,27 +144,48 @@ char *messages[17][2] = {
 char *print_user_state_name(int i) {
     switch (i) {
         case 0:
-            return "WAITING FOR CARD\n";
+            return "WAITING FOR CARD";
         case 1:
-            return "CARD ENTERED\n";
+            return "CARD ENTERED";
         case 2:
-            return "GETTING PASSWORD\n";
+            return "GETTING PASSWORD";
         case 3:
-            return "WAITING FOR COMMANDS\n";
+            return "WAITING FOR COMMANDS";
         case 4:
-            return "SHOW BUDGET\n";
+            return "SHOW BUDGET";
         case 5:
-            return "GET CASH\n";
+            return "GET CASH";
         case 6:
-            return "MAKE DEPOSIT\n";
+            return "MAKE DEPOSIT";
         case 7:
-            return "RETURN CARD\n";
+            return "RETURN CARD";
         case 8:
-            return "ASKING LANGUAGE\n";
+            return "ASKING LANGUAGE";
         case -1:
-            return "AUTOMATE_ERROR\n";
+            return "AUTOMATE_ERROR";
         default:
-            return "UNKNOWN STATE\n";
+            return "UNKNOWN STATE";
+    }
+}
+
+void work_with_user() {
+    while (automate_state != AUTOMATE_ERROR) {
+        if (automate_state == AUTOMATE_ON) {
+            SAFE_RUN(user_state_table[user_state].enter);
+            SAFE_RUN(user_state_table[user_state].process);
+            SAFE_RUN(user_state_table[user_state].exit);
+        } else {
+            if (automate_state == AUTOMATE_BLOCKED)
+                printf("%s\n", messages[16][language]);
+            else {
+                printf("%s\n", messages[15][language]);
+                if (card_in_automate) {
+                    process_return_card_event();
+                    exit_return_card_state();
+                }
+            }
+            sleep(5);
+        }
     }
 }
 

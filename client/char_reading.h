@@ -10,17 +10,15 @@ void free_char_auto_ptr(char **ptr);
 // Char* with automatically freeing memory
 #define char_auto_ptr char* __attribute__((cleanup(free_char_auto_ptr)))
 
-#define READ_INT(num)                           \
-        do {                                    \
-            char buffer;                        \
-            scanf("%d%c", &(num), &buffer);     \
-        } while(0)
-
 // Reading line from console
 #define READ_LINE(line)                         \
         do {                                    \
             static size_t length = 0;           \
             getline(&(line), &length, stdin);   \
+            if ((line) == NULL) {               \
+                printf("ERROR WHILE READING\n");\
+                return 1;                       \
+            }                           \
             (line)[strlen(line) - 1] = 0;       \
         } while(0)
 

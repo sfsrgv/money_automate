@@ -1,10 +1,10 @@
 #include "client_functions.h"
 
-void initialize_sockaddr_in(struct sockaddr_in* server_info) {
-    memset(server_info, 0, sizeof(*server_info));
-    server_info->sin_family = AF_INET;
-    server_info->sin_addr.s_addr = IP_ADDRESS;
-    server_info->sin_port = PORT_NUMBER;
+void initialize_socket_information(struct sockaddr_in* information) {
+    memset(information, 0, sizeof(*information));
+    information->sin_family = AF_INET;
+    information->sin_addr.s_addr = IP_ADDRESS;
+    information->sin_port = PORT_NUMBER;
 }
 
 int send_message(int socket_descriptor, char *message) {

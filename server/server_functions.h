@@ -21,7 +21,8 @@ enum DIALOG_STATUS {
     ERROR
 };
 
-void initialize_sockaddr_in(struct sockaddr_in* server_info);
+// Initialize socket information taken from file "socket_constants.h"
+void initialize_socket_information(struct sockaddr_in* server_info);
 
 // Sending messages
 int send_message(int socket_descriptor, char* message);

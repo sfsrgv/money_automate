@@ -193,7 +193,7 @@ uint32_t keys[18] = {
         0xc0ac29b7, 0xc97c50dd, 0x3f84d5b5, 0xb5470917, 0x9216d5d9, 0x8979fb1b,
 };
 
-extern char* database_file;
+extern char *database_text_format;
 
 void swap(uint32_t *left, uint32_t *right) {
     uint32_t buffer = *left;
@@ -213,7 +213,7 @@ void round_function(uint32_t *left, uint32_t *right, const uint32_t *key) {
     *right = temp;
 }
 
-uint64_t blowfish(uint64_t *number, int operation) {
+uint64_t blowfish(uint64_t *number, enum OPERATION operation) {
     uint32_t left;
     uint32_t right;
     split_uint64(number, &left, &right);
@@ -243,34 +243,31 @@ uint64_t blowfish(uint64_t *number, int operation) {
     return code;
 }
 
-int blowfish_for_database(int operation, char* database) {
+int blowfish_for_database(enum OPERATION operation) {
     if (operation == CODE) {
-        printf("code\n");
-        printf("%lu\n", strlen(database));
         char_auto_ptr buffer;
         size_t current_index = 0;
-        size_t number_of_read_bytes = strlen(database + current_index) >= 8 ? 8 : strlen(database);
+        size_t number_of_read_bytes = strlen(database_text_format + current_index) >= 8 ? 8 : strlen(database_text_format);
         SAFE_MALLOC(buffer, char, sizeof(char) * number_of_read_bytes);
-        strncpy(buffer, database, number_of_read_bytes);
+        strncpy(buffer, database_text_format, number_of_read_bytes);
         buffer[number_of_read_bytes] = '\0';
         FILE *code_file;
         SAFE_OPENING_FILE(code_file, "coded_cards.txt", "w");
-        while (current_index < strlen(database)) {
+        while (current_index < strlen(database_text_format)) {
             uint64_t number = make_uint64_from_array_of_chars(buffer);
             uint64_t coded_line = blowfish(&number, CODE);
             fprintf(code_file, "%022lu", coded_line);
             current_index += number_of_read_bytes;
             free(buffer);
-            number_of_read_bytes = strlen(database + current_index) >= 8 ? 8 : strlen(database);
+            number_of_read_bytes = strlen(database_text_format + current_index) >= 8 ? 8 : strlen(database_text_format);
             SAFE_MALLOC(buffer, char, sizeof(char) * number_of_read_bytes);
-            strncpy(buffer, database + current_index, number_of_read_bytes);
+            strncpy(buffer, database_text_format + current_index, number_of_read_bytes);
             buffer[number_of_read_bytes] = '\0';
         }
         fclose(code_file);
         return 0;
     } else {
-        //printf("decode\n");
-        database_file = "";
+        database_text_format = "";
         FILE *code_file;
         SAFE_OPENING_FILE(code_file, "coded_cards.txt", "r");
         char_auto_ptr buffer;
@@ -281,8 +278,7 @@ int blowfish_for_database(int operation, char* database) {
             uint64_t number = convert_string_to_uint64(buffer);
             uint64_t decoded_line = blowfish(&number, DECODE);
             char_auto_ptr line = make_array_of_chars_from_bytes(&decoded_line);
-            asprintf(&database_file, "%s%s", database_file, line);
-            //printf("%s", line);
+            asprintf(&database_text_format, "%s%s", database_text_format, line);
             free(buffer);
             SAFE_MALLOC(buffer, char, sizeof(char) * 22);
             number_of_read_bytes = fread(buffer, 1, 22, code_file);

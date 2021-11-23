@@ -15,14 +15,14 @@
 #include "char_reading.h"
 
 #define MAX_MESSAGE_LENGTH 10000
-#define SIZE_OF_TIME_LINE 20
 
 enum DIALOG_STATUS {
     CONTINUE,
     ERROR
 };
 
-void initialize_sockaddr_in(struct sockaddr_in* server_info);
+// Initialize socket information taken from file "socket_constants.h"
+void initialize_socket_information(struct sockaddr_in* information);
 
 // Sending messages
 int send_message(int socket_descriptor, char* message);

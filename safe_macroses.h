@@ -1,6 +1,9 @@
 #ifndef BLOWFISH_ALGORITHM_SAFE_MACROSES_H
 #define BLOWFISH_ALGORITHM_SAFE_MACROSES_H
 
+// Every macro started with SAFE_ has function from it`s name and if-statement to check
+// if it works right. If error happens function will print error message and return 1.
+
 #define SAFE_GETTING_TIME(time_sec)                   \
         do {                                          \
             (time_sec) = time(NULL);                  \
@@ -28,12 +31,6 @@
             }                                        \
         } while (0)
 
-
-#define SAFE_RUN(func)                   \
-            do {                         \
-                if ((func) != NULL)      \
-                   func();               \
-            } while (0)
 
 #define SAFE_SOCKET_CREATION(descriptor, domain, type, protocol)\
             do {                                                \
@@ -79,7 +76,21 @@
                         printf("Error while connecting\n ");                                                \
                         return 1;                                                                           \
                     }                                                                                       \
+              } while (0)
+
+// Runs pointer to function if it isn`t null pointer
+#define SAFE_RUN(func)                   \
+            do {                         \
+                if ((func) != NULL)      \
+                   func();               \
             } while (0)
 
+// Copying n symbols from source to destination
+// but replace last symbol of destination with '\0'
+#define STRNCPY_WITH_END_SYMBOL(destination, source, n)   \
+        do {                                              \
+             strncpy((destination), (source), (n));       \
+             (destination)[(n)] = '\0';                   \
+        } while (0)
 
 #endif //BLOWFISH_ALGORITHM_SAFE_MACROSES_H

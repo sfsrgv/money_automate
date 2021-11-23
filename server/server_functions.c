@@ -1,6 +1,6 @@
 #include "server_functions.h"
 
-void initialize_sockaddr_in(struct sockaddr_in *server_info) {
+void initialize_socket_information(struct sockaddr_in *server_info) {
     memset(server_info, 0, sizeof(*server_info));
     server_info->sin_family = AF_INET;
     server_info->sin_addr.s_addr = IP_ADDRESS;
