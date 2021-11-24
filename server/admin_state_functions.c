@@ -116,6 +116,7 @@ void process_turning_off_event() {
     database_text_format = database_to_string();
     blowfish_for_database(CODE);
     send_message(buffer_socket_descriptor, "AUTOMATE TURNED OFF");
+    free(database_text_format);
 }
 
 void exit_turning_off_state() {

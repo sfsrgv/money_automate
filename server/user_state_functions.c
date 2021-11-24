@@ -184,7 +184,7 @@ void work_with_user() {
                     exit_return_card_state();
                 }
             }
-            sleep(5);
+            sleep(3);
         }
     }
 }

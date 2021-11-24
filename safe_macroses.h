@@ -36,7 +36,7 @@
             do {                                                \
                 descriptor = socket(domain, type, protocol);    \
                 if (descriptor == -1) {                         \
-                    printf("Error while creating socket");      \
+                    printf("Error while creating socket\n");      \
                     return 1;                                   \
                 }                                               \
             } while (0)
@@ -45,7 +45,7 @@
 #define SAFE_BIND(descriptor, server_info)                                                            \
             do {                                                                                      \
                  if (bind(descriptor, (struct sockaddr *) &server_info, sizeof(server_info)) == -1) { \
-                    printf("Error while binding");                                                    \
+                    printf("Error while binding\n");                                                    \
                     return 1;                                                                         \
                  }                                                                                    \
             } while (0)
@@ -53,7 +53,7 @@
 #define SAFE_LISTEN(descriptor, backlog)                    \
             do {                                            \
                   if (listen(descriptor, backlog) == -1) {  \
-                     printf("Error while listening");       \
+                     printf("Error while listening\n");       \
                      return 1;                              \
                   }                                         \
             } while (0)
@@ -65,7 +65,7 @@
                   socklen_t socket_size = sizeof(information);                                           \
                   buffer_descriptor = accept(descriptor, (struct sockaddr *) &information, &socket_size);\
                   if (buffer_descriptor == -1) {                                                         \
-                    printf("Error in temporary socket creation");                                        \
+                    printf("Error in temporary socket creation\n");                                        \
                     return 1;                                                                            \
                   }                                                                                      \
             } while (0)
